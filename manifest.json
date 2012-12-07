@@ -1,0 +1,26 @@
+{
+    "name": "Hetairoi",
+    "version": "0.1",
+    "manifest_version": 2,
+    "description": "fucking trello converter",
+    "background": {
+        "scripts": ["background.js"]
+    },
+    "permissions": [
+        "tabs",
+    "<all_urls>"
+        ],
+    "content_scripts": [
+    {
+        "matches": ["<all_urls>"],
+        "js": [
+            "content.js"
+            ]
+    }
+    ],
+    "browser_action": {
+        "default_title": "hetairoi",
+        "default_icon": "icon.jpg"
+    }
+
+}
