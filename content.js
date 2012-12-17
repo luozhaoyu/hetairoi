@@ -1,13 +1,15 @@
-var trello;
+onMessage = function(request, sender, sendResponse) {
+    var content_element = document.getElementsByTagName('body').item().textContent;
+    if (request['action'] == 'getContent')
+        sendResponse({data: content_element});
+    else
+        document.write(request['data']);
+}
+
+
 init = function() {
     console.log('content.js initialized');
-    var content_element = document.getElementsByTagName('body').item().textContent;
-    trello = eval('(' + content_element + ')');
-    trello_cards = trello.cards;
-    for (var i in trello_cards) {
-           console.log(trello_cards[i]['name'] + "\t");
-    }
-    console.log('done');
+    chrome.extension.onMessage.addListener(onMessage);
 }
 
 init();
