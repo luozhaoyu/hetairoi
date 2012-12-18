@@ -83,8 +83,13 @@ onMessage = function(request, sender, sendResponse) {
         }
         var date = new Date();
         var start_date, end_date;
-        start_date = new Date(date.getTime() - (7 + date.getDay() - 1) * 3600 * 24 * 1000);
-        end_date = new Date(date.getTime() - (7 - 4 + date.getDay() - 1) * 3600 * 24 * 1000);
+        var previous_monday;
+        if (date.getDay() > 4)  // if after Friday, check this week
+            previous_monday = date.getDay() - 1;
+        else
+            previous_monday = 7 + date.getDay() - 1;
+        start_date = new Date(date.getTime() - (previous_monday) * 3600 * 24 * 1000);
+        end_date = new Date(date.getTime() - (previous_monday - 4) * 3600 * 24 * 1000);
 
         var done_list_id = getDoneListId(trello, start_date, end_date);
         return aggregateCards(trello, done_list_id);
