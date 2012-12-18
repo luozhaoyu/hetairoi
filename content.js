@@ -36,41 +36,32 @@ onMessage = function(request, sender, sendResponse) {
             }
 
             // handle trello cards
-            var display = '<table>', name, labels;
-            var pt;
-            var actions;
+            var useful_cards = {}; // useful cards, not all the cards
+            var pt, actions, name, labels;
             for (var i in trello_cards) {
                 try {
-                    display += '<tr>';
+                    card_id = trello_cards[i]['id'];
+                    useful_cards[card_id] = {};
                     // name
                     name = trello_cards[i]['name'];
-                    display += "<td>" + name + "</td>";
+                    useful_cards[card_id]['name'] = name;
                     // points
                     pt = name.match(/\d+pt/g);
+                    useful_cards[card_id]['pt'] = pt;
                     if ((pt != undefined) && (pt.length))
-                        display += "<td>" + pt[0] + "</td>";
+                        useful_cards[card_id]['pt'] = pt[0];
                     // labels
-                    labels = trello_cards[i]['labels'];
-                    for (var j in labels) {
-                        display += "<td>" + labels[j]['name'] + "</td>";
-                    }
+                    useful_cards[card_id]['labels'] = trello_cards[i]['labels'];
                     // date
-                    card_id = trello_cards[i]['id'];
                     if (card_action_info.hasOwnProperty(card_id) && (card_action_info[card_id]['actions'].length > 0)) {
-                        actions = card_action_info[card_id]['actions'];
-                        for (var j in actions) {
-                            display += "<td>" + actions[j]['type'] + "</td>";
-                        }
+                        useful_cards[card_id]['actions'] = card_action_info[card_id]['actions'];
                     }
-                    display += "</tr>";
-                    console.log(name + labels);
                 } catch(err) {
                     console.log(err);
                     continue;
                 }
             }
-            display += '</table>';
-            document.body.innerHTML = display;
+            return useful_cards;
         } catch(err) {
             document.write("fail in parsing trello data...");
             console.log(err);
@@ -81,8 +72,10 @@ onMessage = function(request, sender, sendResponse) {
         getDoneListId = function(trello, start_date, end_date) {
             var trello_lists = trello.lists;
             var list_pattern = new RegExp('Done\\[' + (start_date.getMonth() + 1).toString() + start_date.getDate() + '-' + (end_date.getMonth() + 1).toString() + end_date.getDate() + '\\]', 'i');
+            console.log(list_pattern);
             for (var i in trello_lists) {
                 if (list_pattern.test(trello_lists[i]['name'])) {
+                    console.log(trello_lists[i]['name']);
                     return trello_lists[i]['id'];
                 }
             }
@@ -97,6 +90,24 @@ onMessage = function(request, sender, sendResponse) {
         return aggregateCards(trello, done_list_id);
     }
 
+    displayCards = function(cards) {
+        var display = '<table>';
+        var labels;
+        for (var c in cards) {
+            display += '<tr>';
+            display += "<td>" + cards[c]['name'] + "</td>";
+            display += "<td>" + cards[c]['pt'] + "</td>";
+            labels = cards[c]['labels'];
+            for (var i in labels) {
+                display += "<td>" + labels[i]['name'] + "</td>";
+            }
+            display += '</tr>';
+        }
+    
+        display += '</table>';
+        document.body.innerHTML = display;
+    }
+
     var html_content = document.getElementsByTagName('body').item().textContent;
     console.log(html_content.substring(0, 1000));
     var trello;
@@ -108,6 +119,7 @@ onMessage = function(request, sender, sendResponse) {
         return;
     }
     var cards = getLatestDone(trello);
+    displayCards(cards);
 }
 
 
