@@ -69,14 +69,18 @@ onMessage = function(request, sender, sendResponse) {
     }
 
     getLatestDone = function(trello) {
-        getDoneListId = function(trello, start_date, end_date) {
+        getDoneListInfo = function(trello, start_date, end_date) {
             var trello_lists = trello.lists;
-            var list_pattern = new RegExp('Done\\[' + (start_date.getMonth() + 1).toString() + start_date.getDate() + '-' + (end_date.getMonth() + 1).toString() + end_date.getDate() + '\\]', 'i');
+
+            var period = getTwoChar(start_date.getMonth() + 1) + getTwoChar(start_date.getDate()) + '-' + getTwoChar(end_date.getMonth() + 1) + getTwoChar(end_date.getDate());
+            var list_pattern = new RegExp('Done\\[' + period + '\\]', 'i');
             console.log(list_pattern);
-            for (var i in trello_lists) {
-                if (list_pattern.test(trello_lists[i]['name'])) {
-                    console.log(trello_lists[i]['name']);
-                    return trello_lists[i]['id'];
+            if (confirm("Are you sure to sort trello list: Done[" + period + "]?")) {
+                for (var i in trello_lists) {
+                    if (list_pattern.test(trello_lists[i]['name'])) {
+                        console.log(trello_lists[i]['name']);
+                        return trello_lists[i];
+                    }
                 }
             }
             return null;
@@ -91,8 +95,13 @@ onMessage = function(request, sender, sendResponse) {
         start_date = new Date(date.getTime() - (previous_monday) * 3600 * 24 * 1000);
         end_date = new Date(date.getTime() - (previous_monday - 4) * 3600 * 24 * 1000);
 
-        var done_list_id = getDoneListId(trello, start_date, end_date);
-        return aggregateCards(trello, done_list_id);
+        var done_list_info = getDoneListInfo(trello, start_date, end_date);
+        if (done_list_info)
+            return aggregateCards(trello, done_list_info['id']);
+        else {
+            alert("Didn't find matched trello list");
+            return null;
+        }
     }
 
     displayCards = function(cards) {
@@ -124,7 +133,8 @@ onMessage = function(request, sender, sendResponse) {
         return;
     }
     var cards = getLatestDone(trello);
-    displayCards(cards);
+    if (cards)
+        displayCards(cards);
 }
 
 
